@@ -21,14 +21,22 @@ def main():
     for i in range(w_size):
         for j in range(w_size):
             w = [w1[i], w2[j]]
-            L_simple[i,j] = l_simple(w)
-            if L_simple[i,j] < L_min:
+            L_simple[i,j] = l_simple(w) #calculate L_simple for every comb. of w1 and w2
+
+            if L_simple[i,j] < L_min:  #finding the best weights
                 L_min = L_simple[i,j]
                 w1_min = w1[i]
                 w2_min = w1[j]
 
     print(L_min, w1_min, w2_min)
 
+    surface_plot(w_size, L_simple)
+
+    w_init = [5, -2]
+    w_best = gradient_descent(w_init)
+    print(w_best, l_simple(w_best))
+
+def surface_plot(w_size, L_simple):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
@@ -39,10 +47,6 @@ def main():
     ax.plot_surface(X, Y, L_simple)
 
     plt.show()
-
-    w_init = [5,-2]
-    w_best = gradient_descent(w_init)
-    print(w_best, l_simple(w_best))
 
 def gradient_descent(w, learning_rate=100, niter=1000):
     for i in range(2):
