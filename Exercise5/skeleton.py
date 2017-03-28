@@ -9,6 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 def main():
     w_size = 12*10+1
+
     w1 = np.linspace(-6, 6, w_size, endpoint=True)
     w2 = np.linspace(-6, 6, w_size, endpoint=True)
 
@@ -30,11 +31,19 @@ def main():
 
     print(L_min, w1_min, w2_min)
 
-    surface_plot(w_size, L_simple)
+    #surface_plot(w_size, L_simple)
 
-    w_init = [5, -2]
-    w_best = gradient_descent(w_init)
-    print(w_best, l_simple(w_best))
+    learning_rate = [0.0001, 0.01, 0.1, 1, 10, 100]
+    w_n = [0]*len(learning_rate)
+    l_simple_n = [0]*len(learning_rate)
+
+    for i in range(len(learning_rate)):
+        w_n[i] = gradient_descent(2, learning_rate[i]) #dimension of w=2, w1 and w2
+        l_simple_n[i] = l_simple(w_n[i])
+        print(w_n[i],l_simple_n[i])
+
+    plt.plot(learning_rate,l_simple_n)
+    plt.show()
 
 def surface_plot(w_size, L_simple):
     fig = plt.figure()
@@ -48,7 +57,9 @@ def surface_plot(w_size, L_simple):
 
     plt.show()
 
-def gradient_descent(w, learning_rate=100, niter=1000):
+def gradient_descent(dim, learning_rate, niter=1000):
+    w = np.random.rand(dim)
+
     for i in range(2):
         for n in range(niter):
             w[i] = w[i] - learning_rate*l_simple_der(w)[i]
