@@ -40,34 +40,33 @@ def main():
 
     plt.show()
 
-    w_init = [-6,-6]
+    w_init = [5,-2]
     w_best = gradient_descent(w_init)
     print(w_best, l_simple(w_best))
 
-def gradient_descent(w):
-    my = 0.1
-    for n in range(100):
-        for i in range(2):
-            w[i] = w[i] - my*l_simple_der(w)[i]
-        print(l_simple_der(w))
+def gradient_descent(w, learning_rate=100, niter=1000):
+    for i in range(2):
+        for n in range(niter):
+            w[i] = w[i] - learning_rate*l_simple_der(w)[i]
+
     return w
 
 def log_der(w, x):
     x1 = x[0]
     x2 = x[1]
-    dw1 = (x1*(np.exp(np.inner(w,x))))/(1+np.exp(np.inner(w,x)))**2
-    dw2 = (x2*(x1*np.exp(np.inner(w,x))))/(1+np.exp(np.inner(w,x)))**2
+    dw1 = (x1*np.exp(np.inner(w,x)))/((1+np.exp(np.inner(w,x)))**2)
+    dw2 = (x2*np.exp(np.inner(w,x)))/((1+np.exp(np.inner(w,x)))**2)
 
     return [dw1, dw2]
 
 def l_simple_der(w):
-    dl_simple_w1 = 2*l_simple(w)*(2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[0] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[0] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[0])
-    dl_simple_w2 = 2*l_simple(w)*(2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[1] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[1] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[1])
+    dl_simple_w1 = 2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[0] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[0] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[0]
+    dl_simple_w2 = 2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[1] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[1] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[1]
 
     return [dl_simple_w1, dl_simple_w2]
 
 def l_simple(w):
-    L = ((logistic_wx(w, [1,0])-1)**2+(logistic_wx(w, [0,1]))**2+(logistic_wx(w, [1,1])-1)**2)**2
+    L = (logistic_wx(w, [1,0])-1)**2+(logistic_wx(w, [0,1]))**2+(logistic_wx(w, [1,1])-1)**2
     return L
 
 def logistic_z(z): 
@@ -88,15 +87,15 @@ def stochast_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
     num_n=x_train.shape[0]
     w = np.random.rand(dim)
     index_lst=[]
-    for it in xrange(niter):
+    for it in range(niter):
         if(len(index_lst)==0):
-            index_lst=random.sample(xrange(num_n), k=num_n)
+            index_lst=random.sample(range(num_n), k=num_n)
         xy_index = index_lst.pop()
         x=x_train[xy_index,:]
         y=y_train[xy_index]
-        for i in xrange(dim):
-            update_grad = 1 ### something needs to be done here
-            w[i] = w[i] + learn_rate ### something needs to be done here
+        for i in range(dim):
+            update_grad = l_simple_der(w)[i] ### something needs to be done here
+            w[i] = w[i] + learn_rate*update_grad ### something needs to be done here
     return w
 
 def batch_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
@@ -105,10 +104,10 @@ def batch_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
     num_n=x_train.shape[0]
     w = np.random.rand(dim)
     index_lst=[]
-    for it in xrange(niter):
-        for i in xrange(dim):
+    for it in range(niter):
+        for i in range(dim):
             update_grad=0.0
-            for n in xrange(num_n):
+            for n in range(num_n):
                 update_grad+=(-logistic_wx(w,x_train[n])+y_train[n])# something needs to be done here
             w[i] = w[i] + learn_rate * update_grad/num_n
     return w
@@ -124,7 +123,7 @@ def train_and_plot(xtrain,ytrain,xtest,ytest,training_method,learn_rate=0.1,nite
     w=training_method(xtrain,ytrain,learn_rate,niter)
     error=[]
     y_est=[]
-    for i in xrange(len(ytest)):
+    for i in range(len(ytest)):
         error.append(np.abs(classify(w,xtest[i])-ytest[i]))
         y_est.append(classify(w,xtest[i]))
     y_est=np.array(y_est)
