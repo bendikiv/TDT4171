@@ -4,20 +4,71 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import cm
+from sympy import *
+from mpl_toolkits.mplot3d import Axes3D
 
 def main():
     w_size = 12*10+1
     w1 = np.linspace(-6, 6, w_size, endpoint=True)
     w2 = np.linspace(-6, 6, w_size, endpoint=True)
-    L_simple = [0]*w_size
-    i = 0
-    for x in np.nditer(w1):
-        L_simple[i] = l_simple([x,x])
-        i += 1
-    w = [w1, w2]
 
-    plt.plot(w1, L_simple)
+    L_simple = np.zeros((w_size, w_size))
+
+    L_min = 1000;
+    w1_min = 0;
+    w2_min = 0;
+
+    for i in range(w_size):
+        for j in range(w_size):
+            w = [w1[i], w2[j]]
+            L_simple[i,j] = l_simple(w)
+            if L_simple[i,j] < L_min:
+                L_min = L_simple[i,j]
+                w1_min = w1[i]
+                w2_min = w1[j]
+
+    print(L_min, w1_min, w2_min)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    X = np.linspace(-6, 6, w_size, endpoint=True)
+    Y = np.linspace(-6, 6, w_size, endpoint=True)
+    X, Y = np.meshgrid(X, Y)
+
+    ax.plot_surface(X, Y, L_simple)
+
     plt.show()
+
+    w_init = [-6,-6]
+    w_best = gradient_descent(w_init)
+    print(w_best, l_simple(w_best))
+
+def gradient_descent(w):
+    my = 0.1
+    for n in range(100):
+        for i in range(2):
+            w[i] = w[i] - my*l_simple_der(w)[i]
+        print(l_simple_der(w))
+    return w
+
+def log_der(w, x):
+    x1 = x[0]
+    x2 = x[1]
+    dw1 = (x1*(np.exp(np.inner(w,x))))/(1+np.exp(np.inner(w,x)))**2
+    dw2 = (x2*(x1*np.exp(np.inner(w,x))))/(1+np.exp(np.inner(w,x)))**2
+
+    return [dw1, dw2]
+
+def l_simple_der(w):
+    dl_simple_w1 = 2*l_simple(w)*(2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[0] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[0] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[0])
+    dl_simple_w2 = 2*l_simple(w)*(2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[1] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[1] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[1])
+
+    return [dl_simple_w1, dl_simple_w2]
+
+def l_simple(w):
+    L = ((logistic_wx(w, [1,0])-1)**2+(logistic_wx(w, [0,1]))**2+(logistic_wx(w, [1,1])-1)**2)**2
+    return L
 
 def logistic_z(z): 
     return 1.0/(1.0+np.exp(-z))
@@ -28,11 +79,6 @@ def logistic_wx(w,x):
 def classify(w,x):
     x=np.hstack(([1],x))
     return 0 if (logistic_wx(w,x)<0.5) else 1
-
-def l_simple(w):
-    L = ((logistic_wx(w, [1,0])-1)*np.exp(2)+(logistic_wx(w, [0,1]))*np.exp(2)+(logistic_wx(w, [1,1])-1)*np.exp(2))**2
-    print(L)
-    return L
 
 #x_train = [number_of_samples,number_of_features] = number_of_samples x \in R^number_of_features
 
