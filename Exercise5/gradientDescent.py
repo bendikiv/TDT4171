@@ -6,23 +6,24 @@ import matplotlib
 from matplotlib import cm
 from sympy import *
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.axes_grid1 import ImageGrid
 
 def main():
-    w_size = 12*10+1
+    w1 = np.arange(-6,6,0.1)
+    w2 = np.arange(-6,6,0.1)
+    w_size = w1.shape[0]
 
-    w1 = np.linspace(-6, 6, w_size, endpoint=True)
-    w2 = np.linspace(-6, 6, w_size, endpoint=True)
-
-    L_simple = np.zeros((w_size, w_size))
+    L_simple = np.zeros((w1.shape[0], w2.shape[0]))
+    X, Y = np.meshgrid(w1,w2)
+    L_simple = np.zeros(X.shape)
 
     L_min = 1000;
     w1_min = 0;
     w2_min = 0;
 
-    for i in range(w_size):
-        for j in range(w_size):
-            w = [w1[i], w2[j]]
-            L_simple[i,j] = l_simple(w) #calculate L_simple for every comb. of w1 and w2
+    for i in range(w1.shape[0]):
+        for j in range(w2.shape[0]):
+            L_simple[i,j] = l_simple([w1[i],w2[j]]) #calculate L_simple for every comb. of w1 and w2
 
             if L_simple[i,j] < L_min:  #finding the best weights
                 L_min = L_simple[i,j]
@@ -40,7 +41,7 @@ def main():
     for i in range(len(learning_rate)):
         w_n[i] = gradient_descent(2, learning_rate[i]) #dimension of w=2, w1 and w2
         l_simple_n[i] = l_simple(w_n[i])
-        print(w_n[i],l_simple_n[i])
+        #print(w_n[i],l_simple_n[i])
 
     plt.plot(learning_rate,l_simple_n)
     plt.show()
@@ -54,6 +55,7 @@ def surface_plot(w_size, L_simple):
     X, Y = np.meshgrid(X, Y)
 
     ax.plot_surface(X, Y, L_simple)
+    #plt.pcolormesh(X, Y, L_simple)
 
     plt.show()
 
