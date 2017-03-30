@@ -50,7 +50,7 @@ def stochast_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
         x=x_train[xy_index,:]
         y=y_train[xy_index]
         for i in range(dim):
-            update_grad = update_grad + d_loss(w, x, x[i],y) #something needs to be done here
+            update_grad = update_grad + d_loss(w, x, i,y) #something needs to be done here
             w[i] = w[i] + learn_rate*update_grad ### something needs to be done here
     return w
 
