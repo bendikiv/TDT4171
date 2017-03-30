@@ -22,42 +22,18 @@ def surface_plot(w_size, L_simple):
 
     plt.show()
 
-def gradient_descent(dim, learning_rate, niter=1000):
-    w = np.random.rand(dim)
+def logistic(w,x):
+    return 1.0/(1.0+np.exp(-np.inner(w,x)))
 
-    for i in range(2):
-        for n in range(niter):
-            w[i] = w[i] - learning_rate*l_simple_der(w)[i]
+def loss(w, x, y):
+    return 0.5*(logistic(w,x)-y)**2
 
-    return w
-
-def log_der(w, x):
-    x1 = x[0]
-    x2 = x[1]
-    dw1 = (x1*np.exp(np.inner(w,x)))/((1+np.exp(np.inner(w,x)))**2)
-    dw2 = (x2*np.exp(np.inner(w,x)))/((1+np.exp(np.inner(w,x)))**2)
-
-    return [dw1, dw2]
-
-def l_simple_der(w):
-    dl_simple_w1 = 2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[0] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[0] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[0]
-    dl_simple_w2 = 2*(logistic_wx(w,[1,0])-1)*log_der(w,[1,0])[1] + 2*logistic_wx(w,[0,1])*log_der(w,[0,1])[1] + 2*(logistic_wx(w,[1,1])-1)*log_der(w,[1,1])[1]
-
-    return [dl_simple_w1, dl_simple_w2]
-
-def l_simple(w):
-    L = (logistic_wx(w, [1,0])-1)**2+(logistic_wx(w, [0,1]))**2+(logistic_wx(w, [1,1])-1)**2
-    return L
-
-def logistic_z(z):
-    return 1.0/(1.0+np.exp(-z))
-
-def logistic_wx(w,x):
-    return logistic_z(np.inner(w,x))
+def d_loss(w,x,i,y):
+    return (logistic(w,x)-y)*logistic(w,x)**2*x[i]*np.exp(-np.inner(w,x))
 
 def classify(w,x):
     x=np.hstack(([1],x))
-    return 0 if (logistic_wx(w,x)<0.5) else 1
+    return 0 if (logistic(w,x)<0.5) else 1
 
 #x_train = [number_of_samples,number_of_features] = number_of_samples x \in R^number_of_features
 
@@ -74,21 +50,23 @@ def stochast_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
         x=x_train[xy_index,:]
         y=y_train[xy_index]
         for i in range(dim):
-            update_grad = l_simple_der(w)[i] ### something needs to be done here
+            update_grad = update_grad + d_loss(w, x, x[i],y) #something needs to be done here
             w[i] = w[i] + learn_rate*update_grad ### something needs to be done here
     return w
 
 def batch_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
     x_train=np.hstack((np.array([1]*x_train.shape[0]).reshape(x_train.shape[0],1),x_train))
+
     dim=x_train.shape[1]
     num_n=x_train.shape[0]
     w = np.random.rand(dim)
     index_lst=[]
+    print(x_train)
     for it in range(niter):
         for i in range(dim):
             update_grad=0.0
             for n in range(num_n):
-                update_grad+=(-logistic_wx(w,x_train[n])+y_train[n])# something needs to be done here
+                update_grad += d_loss(w,x_train[n], i, y_train[n]) # something needs to be done here
             w[i] = w[i] + learn_rate * update_grad/num_n
     return w
 
