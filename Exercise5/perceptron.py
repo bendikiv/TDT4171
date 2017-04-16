@@ -8,19 +8,39 @@ from sympy import *
 from mpl_toolkits.mplot3d import Axes3D
 
 def main():
-    return
+    testdata = read_file('data/data_big_nonsep_test.csv')
+    traindata = read_file('data/data_big_nonsep_train.csv')
 
-def surface_plot(w_size, L_simple):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    #TRAIN DATA
+    xtrain = np.zeros((traindata.shape[0], 2))
+    ytrain = np.zeros(traindata.shape[0])
 
-    X = np.linspace(-6, 6, w_size, endpoint=True)
-    Y = np.linspace(-6, 6, w_size, endpoint=True)
-    X, Y = np.meshgrid(X, Y)
+    for i in range(traindata.shape[0]):
+        xtrain[i][0] = traindata[i][0]
+        xtrain[i][1] = traindata[i][1]
 
-    ax.plot_surface(X, Y, L_simple)
+        ytrain[i] = traindata[i][2]
 
-    plt.show()
+    #TEST DATA
+    xtest = np.zeros((testdata.shape[0], 2))
+    ytest = np.zeros(testdata.shape[0])
+
+    for i in range(testdata.shape[0]):
+        xtest[i][0] = testdata[i][0]
+        xtest[i][1] = testdata[i][1]
+
+        ytest[i] = testdata[i][2]
+
+    w = stochast_train_w(xtrain, ytrain)
+    print(w)
+
+    w = train_and_plot(xtrain,ytrain,xtest,ytest,stochast_train_w)
+    print(w)
+
+
+def read_file(filename):
+    data = np.genfromtxt(filename, delimiter='\t', dtype=float)
+    return data
 
 def logistic(w,x):
     return 1.0/(1.0+np.exp(-np.inner(w,x)))
@@ -35,8 +55,6 @@ def classify(w,x):
     x=np.hstack(([1],x))
     return 0 if (logistic(w,x)<0.5) else 1
 
-#x_train = [number_of_samples,number_of_features] = number_of_samples x \in R^number_of_features
-
 def stochast_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
     x_train=np.hstack((np.array([1]*x_train.shape[0]).reshape(x_train.shape[0],1),x_train))
     dim=x_train.shape[1]
@@ -49,6 +67,7 @@ def stochast_train_w(x_train,y_train,learn_rate=0.1,niter=1000):
         xy_index = index_lst.pop()
         x=x_train[xy_index,:]
         y=y_train[xy_index]
+        update_grad = 0
         for i in range(dim):
             update_grad = update_grad + d_loss(w, x, i,y) #something needs to be done here
             w[i] = w[i] + learn_rate*update_grad ### something needs to be done here
@@ -87,7 +106,7 @@ def train_and_plot(xtrain,ytrain,xtest,ytest,training_method,learn_rate=0.1,nite
     y_est=np.array(y_est)
     data_test = pd.DataFrame(np.hstack((xtest,y_est.reshape(xtest.shape[0],1))),columns=['x','y','lab'])
     data_test.plot(kind='scatter',x='x',y='y',c='lab',ax=ax,cmap=cm.coolwarm)
-    #print "error=",np.mean(error)
+    print ("error=",np.mean(error))
     return w
 
 main()
