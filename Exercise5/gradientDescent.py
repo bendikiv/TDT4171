@@ -15,7 +15,7 @@ def main():
 
     L_simple = np.zeros((w1.shape[0], w2.shape[0]))
     X, Y = np.meshgrid(w1,w2)
-    L_simple = np.zeros(X.shape)
+    Z = np.zeros(X.shape)
 
     L_min = 1000;
     w1_min = 0;
@@ -23,16 +23,19 @@ def main():
 
     for i in range(w1.shape[0]):
         for j in range(w2.shape[0]):
-            L_simple[i,j] = l_simple([w1[i],w2[j]]) #calculate L_simple for every comb. of w1 and w2
+            Z[i,j] = l_simple([w1[i],w2[j]]) #calculate L_simple for every comb. of w1 and w2
 
-            if L_simple[i,j] < L_min:  #finding the best weights
-                L_min = L_simple[i,j]
+            if Z[i,j] < L_min:  #finding the best weights
+                L_min = Z[i,j]
                 w1_min = w1[i]
                 w2_min = w1[j]
 
     print(L_min, w1_min, w2_min)
+    print(np.argmin(Z))
 
-    surface_plot(w_size, L_simple)
+    plt.pcolormesh(X, Y, Z)
+    plt.colorbar()
+    plt.show()
 
     learning_rate = [0.0001, 0.01, 0.1, 1, 10, 100]
     w_n = [0]*len(learning_rate)
@@ -44,19 +47,6 @@ def main():
         #print(w_n[i],l_simple_n[i])
 
     plt.plot(learning_rate,l_simple_n)
-    plt.show()
-
-def surface_plot(w_size, L_simple):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-    X = np.linspace(-6, 6, w_size, endpoint=True)
-    Y = np.linspace(-6, 6, w_size, endpoint=True)
-    X, Y = np.meshgrid(X, Y)
-
-    ax.plot_surface(X, Y, L_simple)
-    #plt.pcolormesh(X, Y, L_simple)
-
     plt.show()
 
 def gradient_descent(dim, learning_rate, niter=1000):
